@@ -1,6 +1,6 @@
+import Icon from '@/components/Icon';
 import { classy } from '@/helpers/classy';
 import { Cog6ToothIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 import React from 'react';
 
 interface SidebarProps {
@@ -25,13 +25,10 @@ const Sidebar = ({ navigation, teams }: SidebarProps) => {
       <div className='hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col'>
         <div className='flex grow flex-col gap-y-5 overflow-y-auto bg-[#0a0a0b] px-6 pb-4'>
           <div className='flex h-16 shrink-0 items-center'>
-            <Image
-              alt='Your Company'
-              src='https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=white'
-              width={32}
-              height={32}
-              className='h-8 w-auto'
-            />
+            <span className='text-1xl font-semibold text-white'>
+              EmployeeHub
+            </span>
+            <Icon icon='plus' className='w-5 h-5' />
           </div>
           <nav className='flex flex-1 flex-col'>
             <ul role='list' className='flex flex-1 flex-col gap-y-7'>

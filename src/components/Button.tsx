@@ -51,7 +51,7 @@ const buttonColors = {
     primary: {
       dark: 'bg-transparent text-white border-white border-[1px]',
       light:
-        'bg-transparent text-black border-[1px] border-gray-300  hover:bg-gray-200',
+        'bg-transparent text-gray-900 border-[1px] border-gray-300 hover:bg-gray-200 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600',
     },
     //TODO: add secondary and tertiary colors
     secondary: {

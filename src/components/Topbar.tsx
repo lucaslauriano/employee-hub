@@ -1,15 +1,19 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
-const userNavigation = [
-  { name: 'Your profile', href: '#' },
-  { name: 'Sign out', href: '#' },
-];
+const userNavigation = [{ name: 'Sign out', href: '/' }];
 
 type TopbarProps = {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 const Topbar = ({ setSidebarOpen }: TopbarProps) => {
+  const user = {
+    name: 'John Doe',
+    imageUrl:
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+  };
+
   return (
     <div className='sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-zinc-200 bg-zinc-100 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8'>
       <button
@@ -37,9 +41,11 @@ const Topbar = ({ setSidebarOpen }: TopbarProps) => {
           <Menu as='div' className='relative'>
             <MenuButton className='-m-1.5 flex items-center p-1.5'>
               <span className='sr-only'>Open user menu</span>
-              <img
+              <Image
                 alt=''
-                src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+                width={32}
+                height={32}
+                src={user.imageUrl}
                 className='size-8 rounded-full bg-zinc-50'
               />
               <span className='hidden lg:flex lg:items-center'>
@@ -47,7 +53,7 @@ const Topbar = ({ setSidebarOpen }: TopbarProps) => {
                   aria-hidden='true'
                   className='ml-4 text-sm/6 font-semibold text-[#0a0a0b]'
                 >
-                  Tom Cooks
+                  {user.name}
                 </span>
                 <ChevronDownIcon
                   aria-hidden='true'

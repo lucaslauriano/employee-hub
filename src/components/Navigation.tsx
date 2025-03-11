@@ -22,7 +22,12 @@ import Sidebar from '@/components/Sidebar';
 
 const navigation = [
   { name: 'Dashboard', href: '/home', icon: HomeIcon, current: true },
-  { name: 'Employees', href: '/employees', icon: UsersIcon, current: false },
+  {
+    name: 'Employees',
+    href: '/employees',
+    icon: UsersIcon,
+    current: false,
+  },
 ];
 const teams = [
   { id: 1, name: 'Human Resources', href: '#', initial: 'HR', current: false },
