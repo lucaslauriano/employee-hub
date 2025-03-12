@@ -1,67 +1,61 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import Button from '@/components/Button';
 import Page from '@/components/Page';
 import Input from '@/components/Input';
 import { Departments } from '@prisma/client';
 import EmployeeSelect from './EmployeeSelect';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  updateDepartment,
-  createDepartment,
-} from '@/actions/departments/actions';
 
-type IDepartmentForm = {
+interface IDepartmentForm {
   name: string;
   managerId: string | null;
-};
+}
 
 interface DepartmentFormProps {
   department?: Departments;
+  onSubmit?: (data: IDepartmentForm) => Promise<void>;
+  serverErrors?: Record<string, string[]>;
 }
 
-export default function DepartmentForm({ department }: DepartmentFormProps) {
+export default function DepartmentForm({
+  department,
+  onSubmit,
+  serverErrors,
+}: DepartmentFormProps) {
   const router = useRouter();
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const isEditing = Boolean(department?.id);
-
   const {
     register,
-    control,
     handleSubmit,
     setError,
-    formState: { errors: formErrors },
+    formState: { errors },
   } = useForm<IDepartmentForm>({
     defaultValues: department || {},
   });
 
   useEffect(() => {
-    if (errors) {
-      Object.entries(errors).forEach(([field, messages]) => {
+    if (serverErrors) {
+      Object.entries(serverErrors).forEach(([field, messages]) => {
         setError(field as keyof IDepartmentForm, {
           type: 'server',
           message: messages[0],
         });
       });
     }
-  }, [errors, setError]);
+  }, [serverErrors, setError]);
 
-  const onSubmit = async (data: IDepartmentForm) => {
-    const result =
-      isEditing && department
-        ? await updateDepartment(department.id, data)
-        : await createDepartment(data);
-
-    if (result.error && typeof result.error === 'object') {
-      setErrors(result.error);
+  const onSubmitHandler = async (data: IDepartmentForm) => {
+    if (onSubmit) {
+      await onSubmit(data);
     }
   };
 
   return (
     <Page>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmitHandler)}>
         <div className='border-b border-white/10 pb-12'>
           <h2 className='text-base/7 font-semibold text-gray-900'>
             {isEditing ? 'Edit' : 'Add'} Department
@@ -70,27 +64,23 @@ export default function DepartmentForm({ department }: DepartmentFormProps) {
 
         <div className='border-b border-white/10 pb-12'>
           <div className='mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6'>
-            <div className='sm:col-span-4'>
+            <div className='sm:col-span-3'>
               <Input
                 label='Name'
-                error={!!formErrors.name}
-                supportingText={formErrors.name?.message}
+                error={!!errors.name}
+                supportingText={errors.name?.message}
                 {...register('name')}
               />
             </div>
-            <div className='sm:col-span-4'>
-              <Controller
-                control={control}
-                name='managerId'
-                render={({ field: { value, onChange } }) => (
-                  <EmployeeSelect
-                    label='Manager'
-                    value={value}
-                    onChange={onChange}
-                    error={!!formErrors.managerId}
-                    supportingText={formErrors.managerId?.message}
-                  />
-                )}
+            <div className='sm:col-span-3'>
+              <EmployeeSelect
+                label='Manager'
+                error={!!errors.managerId}
+                supportingText={errors.managerId?.message}
+                value={department?.managerId || ''}
+                onChange={(value) =>
+                  register('managerId').onChange({ target: { value } })
+                }
               />
             </div>
           </div>

@@ -1,36 +1,35 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { IEmployeeForm } from '@/types/employees';
 import { Employee } from '@prisma/client';
 import EmployeeForm from '@/app/dashboard/employees/_components/EmployeeForm';
 import { updateEmployee } from '@/actions/employees/actions';
 
-type LayoutProps = {
-  params: {
-    id: string;
-  };
-};
-
-const EditEmployeePage = ({ params }: LayoutProps) => {
+export default function EditEmployeePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const id = use(params).id;
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const router = useRouter();
 
   useEffect(() => {
     const fetchEmployee = async () => {
-      const response = await fetch(`/api/employees/${params.id}`);
+      const response = await fetch(`/api/employees/${id}`);
       if (response.ok) {
         const data = await response.json();
         setEmployee(data.employee);
       }
     };
     fetchEmployee();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (data: IEmployeeForm) => {
-    const result = await updateEmployee(params.id, data);
+    const result = await updateEmployee(id, data);
 
     if (result.success) {
       router.push('/dashboard/employees');
@@ -56,6 +55,4 @@ const EditEmployeePage = ({ params }: LayoutProps) => {
       serverErrors={errors}
     />
   );
-};
-
-export default EditEmployeePage;
+}
