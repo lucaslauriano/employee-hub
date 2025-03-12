@@ -10,16 +10,9 @@ interface SidebarProps {
     icon: React.ElementType;
     current: boolean;
   }[];
-  teams: {
-    id: number;
-    name: string;
-    href: string;
-    initial: string;
-    current: boolean;
-  }[];
 }
 
-const Sidebar = ({ navigation, teams }: SidebarProps) => {
+const Sidebar = ({ navigation }: SidebarProps) => {
   return (
     <>
       <div className='hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col'>
@@ -40,7 +33,7 @@ const Sidebar = ({ navigation, teams }: SidebarProps) => {
                         href={item.href}
                         className={classy(
                           item.current
-                            ? 'bg-zinc-700 text-white'
+                            ? 'bg-zinc-700 text-white hover:bg-zinc-600'
                             : 'text-zinc-200 hover:bg-zinc-700 hover:text-white',
                           'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold'
                         )}
@@ -60,31 +53,7 @@ const Sidebar = ({ navigation, teams }: SidebarProps) => {
                   ))}
                 </ul>
               </li>
-              <li>
-                <div className='text-xs/6 font-semibold text-zinc-200'>
-                  Teams
-                </div>
-                <ul role='list' className='-mx-2 mt-2 space-y-1'>
-                  {teams.map((team) => (
-                    <li key={team.name}>
-                      <a
-                        href={team.href}
-                        className={classy(
-                          team.current
-                            ? 'bg-zinc-700 text-white'
-                            : 'text-zinc-200 hover:bg-zinc-700 hover:text-white',
-                          'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold'
-                        )}
-                      >
-                        <span className='flex size-6 shrink-0 items-center justify-center rounded-lg border border-zinc-400 bg-zinc-500 text-[0.625rem] font-medium text-white'>
-                          {team.initial}
-                        </span>
-                        <span className='truncate'>{team.name}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li>
+
               <li className='mt-auto'>
                 <a
                   href='#'

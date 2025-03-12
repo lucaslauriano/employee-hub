@@ -13,33 +13,44 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
+  BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 
 import { classy } from '@/helpers/classy';
-import Topbar from '@/components/Topbar';
+import Topbar from '@/layout/Topbar';
 import Image from 'next/image';
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/layout/Sidebar';
+import { usePathname } from 'next/navigation';
 
-const navigation = [
-  { name: 'Dashboard', href: '/home', icon: HomeIcon, current: true },
+const getNavigation = (pathname: string) => [
+  {
+    name: 'Dashboard',
+    href: '/home',
+    icon: HomeIcon,
+    current: pathname === '/home',
+  },
   {
     name: 'Employees',
     href: '/employees',
     icon: UsersIcon,
-    current: false,
+    current: pathname.startsWith('/employees'),
+  },
+  {
+    name: 'Departments',
+    href: '/departments',
+    icon: BuildingOfficeIcon,
+    current: pathname.startsWith('/departments'),
   },
 ];
-const teams = [
-  { id: 1, name: 'Human Resources', href: '#', initial: 'HR', current: false },
-  { id: 2, name: 'Financial', href: '#', initial: 'F', current: false },
-  { id: 3, name: 'I.T', href: '#', initial: 'IT', current: false },
-];
+
 type NavigationProps = {
   children: React.ReactNode;
 };
 
 const Navigation = ({ children }: NavigationProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const navigation = getNavigation(pathname);
 
   return (
     <>
@@ -96,7 +107,7 @@ const Navigation = ({ children }: NavigationProps) => {
                               href={item.href}
                               className={classy(
                                 item.current
-                                  ? 'bg-zinc-700 text-white'
+                                  ? 'bg-zinc-700 text-white hover:bg-zinc-600'
                                   : 'text-zinc-200 hover:bg-zinc-700 hover:text-white',
                                 'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold'
                               )}
@@ -116,31 +127,7 @@ const Navigation = ({ children }: NavigationProps) => {
                         ))}
                       </ul>
                     </li>
-                    <li>
-                      <div className='text-xs/6 font-semibold text-zinc-200'>
-                        Your teams
-                      </div>
-                      <ul role='list' className='-mx-2 mt-2 space-y-1'>
-                        {teams.map((team) => (
-                          <li key={team.name}>
-                            <a
-                              href={team.href}
-                              className={classy(
-                                team.current
-                                  ? 'bg-zinc-700 text-white'
-                                  : 'text-zinc-200 hover:bg-zinc-700 hover:text-white',
-                                'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold'
-                              )}
-                            >
-                              <span className='flex size-6 shrink-0 items-center justify-center rounded-lg border border-zinc-400 bg-zinc-500 text-[0.625rem] font-medium text-white'>
-                                {team.initial}
-                              </span>
-                              <span className='truncate'>{team.name}</span>
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
+
                     <li className='mt-auto'>
                       <a
                         href='#'
@@ -161,7 +148,7 @@ const Navigation = ({ children }: NavigationProps) => {
         </Dialog>
 
         {/* Desktop Navigation */}
-        <Sidebar navigation={navigation} teams={teams} />
+        <Sidebar navigation={navigation} />
 
         <div className='lg:pl-72'>
           <Topbar setSidebarOpen={setSidebarOpen} />
