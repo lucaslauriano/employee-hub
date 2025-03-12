@@ -1,11 +1,6 @@
 import { SVGAttributes } from 'react';
 
-import {
-  PlusIcon,
-  HexagonIcon,
-  ArrowUpIcon,
-  MenuBarsIcon,
-} from '@/components/Icons';
+import { PlusIcon, ArrowUpIcon, MenuBarsIcon } from '@/components/Icons';
 
 const Icons = {
   plus: ({ className }: SVGAttributes<{}>) => (

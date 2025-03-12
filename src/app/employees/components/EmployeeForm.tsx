@@ -1,189 +1,137 @@
+'use client';
+
+import { Controller, useForm } from 'react-hook-form';
 import Button from '@/components/Button';
 import Page from '@/components/Page';
-import { ChevronDownIcon } from '@heroicons/react/16/solid';
-//import Avatar from '@/components/Avatar';
+import { IEmployeeForm } from '@/types/employees';
+import Input from '@/components/Input';
+import PhoneInput from '@/components/PhoneInput';
+import { Employee } from '@prisma/client';
+import DepartmentSelect from './DepartmentSelect';
+import { useEffect } from 'react';
 
-export default function EmployeeForm({ id }: { id?: string }) {
-  const hasId = id !== undefined;
+interface EmployeeFormProps {
+  employee?: Employee;
+  onSubmit?: (data: IEmployeeForm) => void;
+  serverErrors?: Record<string, string[]>;
+}
+
+export default function EmployeeForm({
+  employee,
+  onSubmit,
+  serverErrors,
+}: EmployeeFormProps) {
+  const isEditing = Boolean(employee?.id);
+  const {
+    control,
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    defaultValues: employee || {},
+  });
+
+  useEffect(() => {
+    if (serverErrors) {
+      Object.entries(serverErrors).forEach(([field, messages]) => {
+        setError(field as keyof IEmployeeForm, {
+          type: 'server',
+          message: messages[0],
+        });
+      });
+    }
+  }, [serverErrors, setError]);
+
+  const onSubmitHandler = (data: IEmployeeForm) => {
+    if (onSubmit) {
+      onSubmit(data);
+    }
+  };
 
   return (
     <Page>
-      <form>
+      <form onSubmit={handleSubmit(onSubmitHandler)}>
         <div className='border-b border-white/10 pb-12'>
           <h2 className='text-base/7 font-semibold text-white'>
-            {hasId ? 'Edit' : 'Add'} Employee
+            {isEditing ? 'Edit' : 'Add'} Employee
           </h2>
         </div>
 
         <div className='border-b border-white/10 pb-12'>
           <div className='mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6'>
             <div className='sm:col-span-3'>
-              <label
-                htmlFor='first-name'
-                className='block text-sm/6 font-medium text-white'
-              >
-                First name
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='first-name'
-                  name='first-name'
-                  type='text'
-                  autoComplete='given-name'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
+              <Input
+                label='First Name'
+                error={!!errors.firstName}
+                supportingText={errors.firstName?.message}
+                {...register('firstName')}
+              />
+            </div>
+            <div className='sm:col-span-3'>
+              <Input
+                label='Last Name'
+                error={!!errors.lastName}
+                supportingText={errors.lastName?.message}
+                {...register('lastName')}
+              />
+            </div>
+            <div className='sm:col-span-3'>
+              <Input
+                label='Document'
+                error={!!errors.document}
+                supportingText={errors.document?.message}
+                {...register('document')}
+              />
             </div>
 
             <div className='sm:col-span-3'>
-              <label
-                htmlFor='last-name'
-                className='block text-sm/6 font-medium text-white'
-              >
-                Last name
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='last-name'
-                  name='last-name'
-                  type='text'
-                  autoComplete='family-name'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
+              <Input
+                label='Birth Date'
+                error={!!errors.birthDate}
+                supportingText={errors.birthDate?.message}
+                {...register('birthDate')}
+              />
             </div>
 
             <div className='sm:col-span-3'>
-              <label
-                htmlFor='email'
-                className='block text-sm/6 font-medium text-white'
-              >
-                Email address
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='email'
-                  name='email'
-                  type='email'
-                  autoComplete='email'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
+              <Input
+                label='Email'
+                error={!!errors.email}
+                supportingText={errors.email?.message}
+                {...register('email')}
+              />
             </div>
-
             <div className='sm:col-span-3'>
-              <label
-                htmlFor='email'
-                className='block text-sm/6 font-medium text-white'
-              >
-                Phone
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='email'
-                  name='email'
-                  type='email'
-                  autoComplete='email'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
+              <Controller
+                control={control}
+                name='phone'
+                render={({ field: { value, ...field } }) => (
+                  <PhoneInput
+                    {...field}
+                    value={value ?? undefined}
+                    id='phone'
+                    label='Phone'
+                    error={!!errors.phone?.message}
+                    supportingText={errors.phone?.message || ''}
+                  />
+                )}
+              />
             </div>
-
-            <div className='sm:col-span-2'>
-              <label
-                htmlFor='country'
-                className='block text-sm/6 font-medium text-white'
-              >
-                Country
-              </label>
-              <div className='mt-2 grid grid-cols-1'>
-                <select
-                  id='country'
-                  name='country'
-                  autoComplete='country-name'
-                  className='col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pl-3 pr-8 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 *:bg-gray-800 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
-                </select>
-                <ChevronDownIcon
-                  aria-hidden='true'
-                  className='pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-400 sm:size-4'
-                />
-              </div>
-            </div>
-
-            <div className='sm:col-span-2'>
-              <label
-                htmlFor='region'
-                className='block text-sm/6 font-medium text-white'
-              >
-                State / Province
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='region'
-                  name='region'
-                  type='text'
-                  autoComplete='address-level1'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
-            </div>
-
-            <div className='sm:col-span-2'>
-              <label
-                htmlFor='city'
-                className='block text-sm/6 font-medium text-white'
-              >
-                City
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='city'
-                  name='city'
-                  type='text'
-                  autoComplete='address-level2'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
-            </div>
-
-            <div className='col-span-4'>
-              <label
-                htmlFor='street-address'
-                className='block text-sm/6 font-medium text-white'
-              >
-                Street address
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='street-address'
-                  name='street-address'
-                  type='text'
-                  autoComplete='street-address'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
-            </div>
-
-            <div className='sm:col-span-2'>
-              <label
-                htmlFor='postal-code'
-                className='block text-sm/6 font-medium text-white'
-              >
-                ZIP / Postal code
-              </label>
-              <div className='mt-2'>
-                <input
-                  id='postal-code'
-                  name='postal-code'
-                  type='text'
-                  autoComplete='postal-code'
-                  className='block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6'
-                />
-              </div>
+            <div className='sm:col-span-3'>
+              <Controller
+                control={control}
+                name='departmentId'
+                render={({ field: { value, onChange } }) => (
+                  <DepartmentSelect
+                    value={value ?? undefined}
+                    onChange={onChange}
+                    error={!!errors.departmentId}
+                    supportingText={errors.departmentId?.message}
+                    label='Department'
+                  />
+                )}
+              />
             </div>
           </div>
         </div>
@@ -195,10 +143,7 @@ export default function EmployeeForm({ id }: { id?: string }) {
           >
             Cancel
           </Button>
-          <Button
-            type='submit'
-            className='rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500'
-          >
+          <Button type='submit' className='btn-primary'>
             Save
           </Button>
         </div>
