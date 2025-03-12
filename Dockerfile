@@ -8,11 +8,11 @@ FROM base AS deps
 # as its standard C library instead of glibc.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
 # create cache directory for npm
 COPY package.json  package-lock.json* ./
 RUN npm ci
 
+COPY prisma ./prisma/ 
 
 COPY  . .
 RUN npm run build
