@@ -14,10 +14,11 @@ import { Prisma } from '@prisma/client';
 export async function createDepartment(
   data: Parameters<typeof departmentSchema.parse>[0]
 ): Promise<ActionResponse> {
+  'use server';
+
   try {
     const validatedData = await departmentSchema.parseAsync(data);
 
-    // Check if department with same name exists
     const nameExists = await prisma.departments.findFirst({
       where: { name: validatedData.name },
     });
@@ -30,7 +31,6 @@ export async function createDepartment(
       };
     }
 
-    // Check if manager is already assigned to another department
     if (validatedData.managerId) {
       const managerExists = await prisma.departments.findFirst({
         where: { managerId: validatedData.managerId },
@@ -50,9 +50,6 @@ export async function createDepartment(
     await prisma.departments.create({
       data: validatedData,
     });
-
-    revalidatePath('/departments');
-    redirect('/departments');
   } catch (error) {
     console.error('Failed to create department:', error);
     if (error instanceof z.ZodError) {
@@ -80,16 +77,20 @@ export async function createDepartment(
     }
     return { error: 'Failed to create department' };
   }
+
+  revalidatePath('/dashboard/departments');
+  redirect('/dashboard/departments');
 }
 
 export async function updateDepartment(
   id: string,
   data: Parameters<typeof departmentSchema.parse>[0]
 ): Promise<ActionResponse> {
+  'use server';
+
   try {
     const validatedData = await departmentSchema.parseAsync(data);
 
-    // Check if department with same name exists (excluding current department)
     const nameExists = await prisma.departments.findFirst({
       where: {
         name: validatedData.name,
@@ -109,9 +110,6 @@ export async function updateDepartment(
       where: { id },
       data: validatedData,
     });
-
-    revalidatePath('/departments');
-    redirect('/departments');
   } catch (error) {
     console.error('Failed to update department:', error);
     if (error instanceof z.ZodError) {
@@ -129,4 +127,6 @@ export async function updateDepartment(
     }
     return { error: 'Failed to update department' };
   }
+  revalidatePath('/dashboard/departments');
+  redirect('/dashboard/departments');
 }

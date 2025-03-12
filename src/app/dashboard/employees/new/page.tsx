@@ -1,10 +1,10 @@
 'use client';
 
-import EmployeeForm from '@/app/employees/components/EmployeeForm';
 import { IEmployeeForm } from '@/types/employees';
-import { createEmployee } from '../actions';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import EmployeeForm from '@/app/dashboard/employees/_components/EmployeeForm';
+import { createEmployee } from '@/actions/employees/actions';
 
 const NewEmployeePage = () => {
   const [errors, setErrors] = useState<Record<string, string[]>>({});

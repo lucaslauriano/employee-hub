@@ -25,21 +25,21 @@ import { usePathname } from 'next/navigation';
 const getNavigation = (pathname: string) => [
   {
     name: 'Dashboard',
-    href: '/home',
+    href: '/dashboard/home',
     icon: HomeIcon,
-    current: pathname === '/home',
+    current: pathname === '/dashboard/home',
   },
   {
     name: 'Employees',
-    href: '/employees',
+    href: '/dashboard/employees',
     icon: UsersIcon,
-    current: pathname.startsWith('/employees'),
+    current: pathname.startsWith('/dashboard/employees'),
   },
   {
     name: 'Departments',
-    href: '/departments',
+    href: '/dashboard/departments',
     icon: BuildingOfficeIcon,
-    current: pathname.startsWith('/departments'),
+    current: pathname.startsWith('/dashboard/departments'),
   },
 ];
 
@@ -107,8 +107,8 @@ const Navigation = ({ children }: NavigationProps) => {
                               href={item.href}
                               className={classy(
                                 item.current
-                                  ? 'bg-zinc-700 text-white hover:bg-zinc-600'
-                                  : 'text-zinc-200 hover:bg-zinc-700 hover:text-white',
+                                  ? 'bg-gray-700 text-white hover:bg-gray-600'
+                                  : 'text-gray-200 hover:bg-gray-700 hover:text-white',
                                 'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold'
                               )}
                             >
@@ -117,7 +117,7 @@ const Navigation = ({ children }: NavigationProps) => {
                                 className={classy(
                                   item.current
                                     ? 'text-white'
-                                    : 'text-zinc-200 group-hover:text-white',
+                                    : 'text-gray-200 group-hover:text-white',
                                   'size-6 shrink-0'
                                 )}
                               />
@@ -131,11 +131,11 @@ const Navigation = ({ children }: NavigationProps) => {
                     <li className='mt-auto'>
                       <a
                         href='#'
-                        className='group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-zinc-200 hover:bg-zinc-700 hover:text-white'
+                        className='group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-200 hover:bg-gray-700 hover:text-white'
                       >
                         <Cog6ToothIcon
                           aria-hidden='true'
-                          className='size-6 shrink-0 text-zinc-200 group-hover:text-white'
+                          className='size-6 shrink-0 text-gray-200 group-hover:text-white'
                         />
                         Settings
                       </a>

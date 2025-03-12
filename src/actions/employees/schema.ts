@@ -6,6 +6,7 @@ export const employeeSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email format'),
   document: z.string().min(1, 'Document is required'),
+  phone: z.string().nullable(),
   birthDate: z.string().superRefine(async (date, ctx) => {
     const isLegal = await hasLegalAge(date);
     if (!isLegal) {

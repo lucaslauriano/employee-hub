@@ -9,6 +9,7 @@ import PhoneInput from '@/components/PhoneInput';
 import { Employee } from '@prisma/client';
 import DepartmentSelect from './DepartmentSelect';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface EmployeeFormProps {
   employee?: Employee;
@@ -21,6 +22,7 @@ export default function EmployeeForm({
   onSubmit,
   serverErrors,
 }: EmployeeFormProps) {
+  const router = useRouter();
   const isEditing = Boolean(employee?.id);
   const {
     control,
@@ -28,7 +30,7 @@ export default function EmployeeForm({
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm({
+  } = useForm<IEmployeeForm>({
     defaultValues: employee || {},
   });
 
@@ -43,9 +45,9 @@ export default function EmployeeForm({
     }
   }, [serverErrors, setError]);
 
-  const onSubmitHandler = (data: IEmployeeForm) => {
+  const onSubmitHandler = async (data: IEmployeeForm) => {
     if (onSubmit) {
-      onSubmit(data);
+      await onSubmit(data);
     }
   };
 
@@ -53,7 +55,7 @@ export default function EmployeeForm({
     <Page>
       <form onSubmit={handleSubmit(onSubmitHandler)}>
         <div className='border-b border-white/10 pb-12'>
-          <h2 className='text-base/7 font-semibold text-white'>
+          <h2 className='text-base/7 font-semibold text-gray-900'>
             {isEditing ? 'Edit' : 'Add'} Employee
           </h2>
         </div>
@@ -106,10 +108,11 @@ export default function EmployeeForm({
               <Controller
                 control={control}
                 name='phone'
-                render={({ field: { value, ...field } }) => (
+                render={({ field: { value, onChange, ...field } }) => (
                   <PhoneInput
                     {...field}
                     value={value ?? undefined}
+                    onChange={onChange}
                     id='phone'
                     label='Phone'
                     error={!!errors.phone?.message}
@@ -138,14 +141,13 @@ export default function EmployeeForm({
 
         <div className='mt-6 flex items-center justify-end gap-x-6'>
           <Button
+            type='button'
             appearance='outlined'
-            className='text-sm/6 font-semibold text-white'
+            onClick={() => router.push('/dashboard/employees')}
           >
             Cancel
           </Button>
-          <Button type='submit' className='btn-primary'>
-            Save
-          </Button>
+          <Button type='submit'>Save</Button>
         </div>
       </form>
     </Page>

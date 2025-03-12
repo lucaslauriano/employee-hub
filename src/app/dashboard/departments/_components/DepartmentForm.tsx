@@ -7,8 +7,11 @@ import Input from '@/components/Input';
 import { Departments } from '@prisma/client';
 import EmployeeSelect from './EmployeeSelect';
 import { useEffect, useState } from 'react';
-import { createDepartment, updateDepartment } from '../actions';
 import { useRouter } from 'next/navigation';
+import {
+  updateDepartment,
+  createDepartment,
+} from '@/actions/departments/actions';
 
 type IDepartmentForm = {
   name: string;
@@ -60,7 +63,7 @@ export default function DepartmentForm({ department }: DepartmentFormProps) {
     <Page>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className='border-b border-white/10 pb-12'>
-          <h2 className='text-base/7 font-semibold text-white'>
+          <h2 className='text-base/7 font-semibold text-gray-900'>
             {isEditing ? 'Edit' : 'Add'} Department
           </h2>
         </div>
@@ -97,14 +100,11 @@ export default function DepartmentForm({ department }: DepartmentFormProps) {
           <Button
             type='button'
             appearance='outlined'
-            className='text-sm/6 font-semibold text-white'
-            onClick={() => router.push('/departments')}
+            onClick={() => router.push('/dashboard/departments')}
           >
             Cancel
           </Button>
-          <Button type='submit' className='btn-primary'>
-            Save
-          </Button>
+          <Button type='submit'>Save</Button>
         </div>
       </form>
     </Page>

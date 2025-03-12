@@ -1,10 +1,11 @@
 'use client';
 
-import EmployeeForm from '@/app/employees/components/EmployeeForm';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IEmployeeForm } from '@/types/employees';
 import { Employee } from '@prisma/client';
+import EmployeeForm from '@/app/dashboard/employees/_components/EmployeeForm';
+import { updateEmployee } from '@/actions/employees/actions';
 
 type LayoutProps = {
   params: {
@@ -14,6 +15,7 @@ type LayoutProps = {
 
 const EditEmployeePage = ({ params }: LayoutProps) => {
   const [employee, setEmployee] = useState<Employee | null>(null);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -28,24 +30,18 @@ const EditEmployeePage = ({ params }: LayoutProps) => {
   }, [params.id]);
 
   const handleSubmit = async (data: IEmployeeForm) => {
-    try {
-      const response = await fetch('/api/employees', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...data, id: params.id }),
-      });
+    const result = await updateEmployee(params.id, data);
 
-      if (response.ok) {
-        router.push('/employees');
-        router.refresh();
-      } else {
-        const error = await response.json();
-        console.error('Failed to update employee:', error);
-      }
-    } catch (error) {
-      console.error('Error updating employee:', error);
+    if (result.success) {
+      router.push('/dashboard/employees');
+      router.refresh();
+      return;
+    }
+
+    if (typeof result.error === 'object') {
+      setErrors(result.error);
+    } else {
+      console.error('Failed to update employee:', result.error);
     }
   };
 
@@ -53,7 +49,13 @@ const EditEmployeePage = ({ params }: LayoutProps) => {
     return <div className='text-white'>Loading...</div>;
   }
 
-  return <EmployeeForm employee={employee} onSubmit={handleSubmit} />;
+  return (
+    <EmployeeForm
+      employee={employee}
+      onSubmit={handleSubmit}
+      serverErrors={errors}
+    />
+  );
 };
 
 export default EditEmployeePage;

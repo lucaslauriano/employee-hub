@@ -1,5 +1,6 @@
-import { classy } from '@/helpers/classy';
 import React, { forwardRef } from 'react';
+
+import { classy } from '@/helpers/classy';
 
 type InputProps = {
   id?: string;
@@ -64,8 +65,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <label
           htmlFor={id}
           className={classy(
-            'pb-2 text-xs font-semibold',
-            error ? 'text-red-900' : '',
+            'pb-2 text-xs font-semibold text-gray-900',
+            error ? 'text-red-600' : '',
             disabled ? 'text-gray-200' : ''
           )}
         >
@@ -101,18 +102,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           autoComplete={autoComplete}
           className={classy(
             disabled ? 'text-gray-200' : '',
-            'hover:ring-2 focus:ring-2',
+            'h-[60px] w-full rounded border border-gray-300 bg-white px-4 text-sm outline-none',
             'transition-all duration-200',
             'disabled:border-gray-200 disabled:placeholder-gray-200 disabled:hover:ring-0',
             trailingContent ? 'pr-[80px]' : '',
             error
-              ? 'border-red-200 text-red-900 placeholder-red-900 placeholder-opacity-50'
+              ? 'border-red-200 text-red-600 placeholder-red-900 placeholder-opacity-50'
               : 'border-gray-50 text-black',
             error
-              ? 'hover:ring-red-900 focus:ring-red-900 ring-red-900 border-red-900'
-              : '',
+              ? 'hover:ring-red-900 focus:ring-red-900'
+              : 'hover:ring-2 focus:ring-2 hover:ring-black focus:ring-black',
             prefix ? 'rounded-l-none' : '',
-            'block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-white/10 placeholder:text-gray-500   sm:text-sm/6',
             className
           )}
           placeholder={placeholder}
@@ -130,7 +130,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <p
           className={classy(
             'pt-1 text-xs font-semibold',
-            error ? 'text-red-900' : '',
+            error ? 'text-red-600' : '',
             disabled ? 'text-gray-200' : 'text-black'
           )}
         >

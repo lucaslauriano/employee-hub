@@ -36,46 +36,47 @@ const buttonColors = {
       light:
         'bg-zinc-700 text-white hover:bg-zinc-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-600',
     },
-    //TODO: add secondary and tertiary colors
     secondary: {
-      dark: '',
-      light: '',
+      dark: 'bg-blue-900 text-white',
+      light:
+        'bg-blue-900 text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800',
     },
     tertiary: {
-      dark: '',
-      light: '',
+      dark: 'bg-orange-900 text-white',
+      light:
+        'bg-orange-900 text-white hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800',
     },
   },
 
   outlined: {
     primary: {
-      dark: 'bg-transparent text-white border-white border-[1px]',
+      dark: 'bg-transparent text-gray-900 border-white border-[1px] text-gray-900',
       light:
-        'bg-transparent text-gray-900 border-[1px] border-gray-300 hover:bg-gray-200 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600',
+        'bg-transparent text-gray-900 hover:text-gray-900 border-[1px] border-gray-300 hover:bg-gray-200 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600',
     },
-    //TODO: add secondary and tertiary colors
     secondary: {
-      dark: '',
-      light: '',
+      dark: 'bg-transparent text-blue-900 border-blue-900 border-[1px]',
+      light:
+        'bg-transparent text-blue-900 border-[1px] border-blue-900 hover:bg-blue-100 hover:text-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800',
     },
     tertiary: {
-      dark: '',
-      light: '',
+      dark: 'bg-transparent text-orange-900 border-orange-900 border-[1px]',
+      light:
+        'bg-transparent text-orange-900 border-[1px] border-orange-900 hover:bg-orange-100 hover:text-orange-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800',
     },
   },
-  //TODO: add secondary and tertiary colors
   text: {
     primary: {
       dark: 'bg-transparent text-white',
-      light: 'bg-transparent text-black',
+      light: 'bg-transparent text-black hover:bg-gray-100',
     },
     secondary: {
-      dark: '',
-      light: '',
+      dark: 'bg-transparent text-blue-900',
+      light: 'bg-transparent text-blue-900 hover:bg-blue-100',
     },
     tertiary: {
-      dark: '',
-      light: '',
+      dark: 'bg-transparent text-orange-900',
+      light: 'bg-transparent text-orange-900 hover:bg-orange-100',
     },
   },
 };
@@ -110,6 +111,7 @@ export default function Button({
         icon ? 'justify-between' : 'justify-center',
         icon && iconPosition === 'left' ? 'text-right' : '',
         icon && iconPosition === 'right' ? 'text-left' : '',
+        disabled ? 'opacity-50 cursor-not-allowed' : '',
         className
       )}
     >
