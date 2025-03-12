@@ -22,35 +22,58 @@ export default function EditDepartmentPage({
 
   useEffect(() => {
     const fetchDepartment = async () => {
-      const response = await fetch(`/api/departments/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDepartment(data.department);
+      try {
+        const response = await fetch(`/api/departments/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setDepartment(data.department);
+        } else {
+          const error = await response.json();
+          console.error('Failed to fetch department:', error);
+        }
+      } catch (error) {
+        console.error('Error fetching department:', error);
       }
     };
     fetchDepartment();
   }, [id]);
 
   const handleSubmit = async (data: IDepartmentForm) => {
-    const result = await fetch('/api/departments', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ...data, id: id }),
-    });
+    try {
+      const result = await fetch('/api/departments', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          name: data.name,
+          managerId: data.managerId,
+        }),
+      });
 
-    if (result.ok) {
-      router.push('/dashboard/departments');
-      router.refresh();
-      return;
-    }
+      const responseData = await result.json();
 
-    const error = await result.json();
-    if (typeof error === 'object') {
-      setErrors(error);
-    } else {
-      console.error('Failed to update department:', error);
+      if (result.ok) {
+        router.push('/dashboard/departments');
+        router.refresh();
+        return;
+      }
+
+      if (responseData.error) {
+        if (typeof responseData.error === 'object') {
+          setErrors(responseData.error);
+        } else {
+          setErrors({
+            form: [responseData.error],
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating department:', error);
+      setErrors({
+        form: ['Failed to update department. Please try again.'],
+      });
     }
   };
 

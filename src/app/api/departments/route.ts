@@ -41,7 +41,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id } = body;
+    const { id, name, managerId } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -50,9 +50,25 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Check if department exists
+    const existingDepartment = await prisma.departments.findUnique({
+      where: { id },
+    });
+
+    if (!existingDepartment) {
+      return NextResponse.json(
+        { error: 'Department not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update department
     const department = await prisma.departments.update({
       where: { id },
-      data: body,
+      data: {
+        name,
+        managerId,
+      },
       include: {
         employee: {
           select: {
@@ -64,10 +80,11 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json({ department }, { status: 200 });
-  } catch {
+  } catch (error) {
+    console.error('Error updating department:', error);
     return NextResponse.json(
       { error: 'Failed to update department' },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }
