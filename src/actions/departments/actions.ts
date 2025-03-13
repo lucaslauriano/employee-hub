@@ -1,132 +1,146 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { departmentSchema } from './schema';
 import {
-  departmentSchema,
-  type ActionResponse,
-  type ValidationErrors,
-} from './schema';
-import { z } from 'zod';
-import { Prisma } from '@prisma/client';
+  createDepartmentRecord,
+  findDepartmentByName,
+  findDepartmentByManagerId,
+  findDepartmentByNameExcludingId,
+  findDepartmentByManagerIdExcludingId,
+  updateDepartmentRecord,
+} from './services';
+
+export type ActionResponse = {
+  success: boolean;
+  message?: string;
+  errors?: Record<string, string[]>;
+};
 
 export async function createDepartment(
-  data: Parameters<typeof departmentSchema.parse>[0]
+  prevState: ActionResponse | null,
+  formData: FormData
 ): Promise<ActionResponse> {
-  'use server';
-
   try {
-    const validatedData = await departmentSchema.parseAsync(data);
+    const rawData = {
+      name: formData.get('name') as string,
+      managerId: (formData.get('managerId') as string) || null,
+    };
 
-    const nameExists = await prisma.departments.findFirst({
-      where: { name: validatedData.name },
-    });
+    const validatedData = departmentSchema.safeParse(rawData);
 
-    if (nameExists) {
+    if (!validatedData.success) {
       return {
-        error: {
-          name: ['Department with this name already exists'],
-        },
+        success: false,
+        message: 'Please fix the errors in the form',
+        errors: validatedData.error.flatten().fieldErrors,
       };
     }
 
-    if (validatedData.managerId) {
-      const managerExists = await prisma.departments.findFirst({
-        where: { managerId: validatedData.managerId },
-      });
+    const nameExists = await findDepartmentByName(validatedData.data.name);
+    const managerExists = validatedData.data.managerId
+      ? await findDepartmentByManagerId(validatedData.data.managerId)
+      : null;
 
-      if (managerExists) {
-        return {
-          error: {
+    if (nameExists || managerExists) {
+      return {
+        success: false,
+        message: 'Validation failed',
+        errors: {
+          ...(nameExists && {
+            name: ['Department with this name already exists'],
+          }),
+          ...(managerExists && {
             managerId: [
               'This manager is already assigned to another department',
             ],
-          },
-        };
-      }
-    }
-
-    await prisma.departments.create({
-      data: validatedData,
-    });
-  } catch (error) {
-    console.error('Failed to create department:', error);
-    if (error instanceof z.ZodError) {
-      const errors: ValidationErrors = {};
-      error.errors.forEach((err) => {
-        if (err.path) {
-          const field = err.path[0] as keyof ValidationErrors;
-          if (!errors[field]) {
-            errors[field] = [];
-          }
-          errors[field]?.push(err.message);
-        }
-      });
-      return { error: errors };
-    }
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      return {
-        error: {
-          managerId: ['This manager is already assigned to another department'],
+          }),
         },
       };
     }
-    return { error: 'Failed to create department' };
-  }
 
-  revalidatePath('/dashboard/departments');
-  redirect('/dashboard/departments');
+    await createDepartmentRecord(validatedData.data);
+
+    return {
+      success: true,
+      message: 'Department created successfully!',
+    };
+  } catch (error) {
+    console.error('Error creating department:', error);
+    return {
+      success: false,
+      message: 'An unexpected error occurred',
+    };
+  } finally {
+    revalidatePath('/dashboard/departments');
+    redirect('/dashboard/departments');
+  }
 }
 
 export async function updateDepartment(
-  id: string,
-  data: Parameters<typeof departmentSchema.parse>[0]
+  prevState: ActionResponse | null,
+  formData: FormData
 ): Promise<ActionResponse> {
-  'use server';
-
   try {
-    const validatedData = await departmentSchema.parseAsync(data);
+    const id = formData.get('id') as string;
+    const rawData = {
+      name: formData.get('name') as string,
+      managerId: (formData.get('managerId') as string) || null,
+    };
 
-    const nameExists = await prisma.departments.findFirst({
-      where: {
-        name: validatedData.name,
-        NOT: { id },
-      },
-    });
+    const validatedData = departmentSchema.safeParse(rawData);
 
-    if (nameExists) {
+    if (!validatedData.success) {
       return {
-        error: {
-          name: ['Department with this name already exists'],
+        success: false,
+        message: 'Please fix the errors in the form',
+        errors: validatedData.error.flatten().fieldErrors,
+      };
+    }
+
+    const nameExists = await findDepartmentByNameExcludingId(
+      validatedData.data.name,
+      id
+    );
+    const managerExists = validatedData.data.managerId
+      ? await findDepartmentByManagerIdExcludingId(
+          validatedData.data.managerId,
+          id
+        )
+      : null;
+
+    if (nameExists || managerExists) {
+      return {
+        success: false,
+        message: 'Validation failed',
+        errors: {
+          ...(nameExists && {
+            name: ['Department with this name already exists'],
+          }),
+          ...(managerExists && {
+            managerId: [
+              'This manager is already assigned to another department',
+            ],
+          }),
         },
       };
     }
 
-    await prisma.departments.update({
-      where: { id },
-      data: validatedData,
-    });
+    await updateDepartmentRecord(id, validatedData.data);
+
+    return {
+      success: true,
+      message: 'Department updated successfully!',
+    };
   } catch (error) {
-    console.error('Failed to update department:', error);
-    if (error instanceof z.ZodError) {
-      const errors: ValidationErrors = {};
-      error.errors.forEach((err) => {
-        if (err.path) {
-          const field = err.path[0] as keyof ValidationErrors;
-          if (!errors[field]) {
-            errors[field] = [];
-          }
-          errors[field]?.push(err.message);
-        }
-      });
-      return { error: errors };
-    }
-    return { error: 'Failed to update department' };
+    console.error('Error updating department:', error);
+    return {
+      success: false,
+      message: 'An unexpected error occurred',
+    };
+  } finally {
+    revalidatePath('/dashboard/departments');
+    redirect('/dashboard/departments');
   }
-  revalidatePath('/dashboard/departments');
-  redirect('/dashboard/departments');
 }

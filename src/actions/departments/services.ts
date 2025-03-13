@@ -1,6 +1,5 @@
-import { departmentSchema } from '@/actions/departments/schema';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
+import type { DepartmentFormData } from './schema';
 
 export type DepartmentWithManager = {
   id: string;
@@ -11,8 +10,6 @@ export type DepartmentWithManager = {
   manager_last_name: string | null;
   employee_count: bigint;
 };
-
-type DepartmentFormData = z.infer<typeof departmentSchema>;
 
 export async function findDepartmentsWithManagers(): Promise<
   DepartmentWithManager[]
@@ -34,21 +31,12 @@ export async function findDepartmentsWithManagers(): Promise<
 export async function findDepartmentById(id: string) {
   return prisma.departments.findUnique({
     where: { id },
-    include: {
-      employee: {
-        select: {
-          firstName: true,
-          lastName: true,
-        },
-      },
-    },
   });
 }
 
 export async function findDepartmentByName(name: string) {
   return prisma.departments.findFirst({
     where: { name },
-    select: { id: true },
   });
 }
 
@@ -61,14 +49,12 @@ export async function findDepartmentByNameExcludingId(
       name,
       NOT: { id },
     },
-    select: { id: true },
   });
 }
 
 export async function findDepartmentByManagerId(managerId: string) {
   return prisma.departments.findFirst({
     where: { managerId },
-    select: { id: true },
   });
 }
 
@@ -81,7 +67,6 @@ export async function findDepartmentByManagerIdExcludingId(
       managerId,
       NOT: { id },
     },
-    select: { id: true },
   });
 }
 
@@ -101,15 +86,14 @@ export async function updateDepartmentRecord(
   });
 }
 
+export async function findAllEmployees() {
+  return prisma.employee.findMany({
+    orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+  });
+}
+
 export async function findAllDepartments() {
   return prisma.departments.findMany({
-    include: {
-      employee: {
-        select: {
-          firstName: true,
-          lastName: true,
-        },
-      },
-    },
+    orderBy: { name: 'asc' },
   });
 }

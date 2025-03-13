@@ -1,103 +1,140 @@
 'use server';
 
-import { IEmployeeForm } from '@/types/employees';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import {
-  employeeSchema,
-  type ActionResponse,
-  type ValidationErrors,
-} from './schema';
-import { z } from 'zod';
+import { employeeSchema } from './schema';
 import {
   createEmployeeRecord,
-  findEmployeeByDocument,
   findEmployeeByEmail,
-  findEmployeeByDocumentExcludingId,
+  findEmployeeByDocument,
   findEmployeeByEmailExcludingId,
+  findEmployeeByDocumentExcludingId,
   updateEmployeeRecord,
 } from './services';
 
+export type ActionResponse = {
+  success: boolean;
+  message?: string;
+  errors?: Record<string, string[]>;
+};
+
 export async function createEmployee(
-  data: IEmployeeForm
+  prevState: ActionResponse | null,
+  formData: FormData
 ): Promise<ActionResponse> {
   try {
-    const validatedData = await employeeSchema.parseAsync(data);
+    const rawData = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('email') as string,
+      document: formData.get('document') as string,
+      phone: formData.get('phone') as string,
+      departmentId: (formData.get('departmentId') as string) || null,
+    };
 
-    const emailExists = await findEmployeeByEmail(data.email);
-    const documentExists = await findEmployeeByDocument(data.document);
+    const validatedData = employeeSchema.safeParse(rawData);
+
+    if (!validatedData.success) {
+      return {
+        success: false,
+        message: 'Please fix the errors in the form',
+        errors: validatedData.error.flatten().fieldErrors,
+      };
+    }
+
+    const emailExists = await findEmployeeByEmail(validatedData.data.email);
+    const documentExists = await findEmployeeByDocument(
+      validatedData.data.document
+    );
 
     if (emailExists || documentExists) {
       return {
-        error: {
+        success: false,
+        message: 'Validation failed',
+        errors: {
           ...(emailExists && { email: ['Email already exists'] }),
           ...(documentExists && { document: ['Document already exists'] }),
         },
       };
     }
 
-    await createEmployeeRecord(validatedData);
+    await createEmployeeRecord(validatedData.data);
+
+    return {
+      success: true,
+      message: 'Employee created successfully!',
+    };
   } catch (error) {
     console.error('Error creating employee:', error);
-    if (error instanceof z.ZodError) {
-      const errors: ValidationErrors = {};
-      error.errors.forEach((err) => {
-        if (err.path) {
-          const field = err.path[0] as keyof ValidationErrors;
-          if (!errors[field]) {
-            errors[field] = [];
-          }
-          errors[field]?.push(err.message);
-        }
-      });
-      return { error: errors };
-    }
-    return { error: 'Failed to create employee' };
+    return {
+      success: false,
+      message: 'An unexpected error occurred',
+    };
+  } finally {
+    revalidatePath('/dashboard/employees');
+    redirect('/dashboard/employees');
   }
-  revalidatePath('/dashboard/employees');
-  redirect('/dashboard/employees');
 }
 
 export async function updateEmployee(
-  id: string,
-  data: IEmployeeForm
+  prevState: ActionResponse | null,
+  formData: FormData
 ): Promise<ActionResponse> {
   try {
-    const validatedData = await employeeSchema.parseAsync(data);
+    const id = formData.get('id') as string;
+    const rawData = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('email') as string,
+      document: formData.get('document') as string,
+      phone: formData.get('phone') as string,
+      departmentId: (formData.get('departmentId') as string) || null,
+    };
 
-    const emailExists = await findEmployeeByEmailExcludingId(data.email, id);
+    const validatedData = employeeSchema.safeParse(rawData);
+
+    if (!validatedData.success) {
+      return {
+        success: false,
+        message: 'Please fix the errors in the form',
+        errors: validatedData.error.flatten().fieldErrors,
+      };
+    }
+
+    const emailExists = await findEmployeeByEmailExcludingId(
+      validatedData.data.email,
+      id
+    );
     const documentExists = await findEmployeeByDocumentExcludingId(
-      data.document,
+      validatedData.data.document,
       id
     );
 
     if (emailExists || documentExists) {
       return {
-        error: {
+        success: false,
+        message: 'Validation failed',
+        errors: {
           ...(emailExists && { email: ['Email already exists'] }),
           ...(documentExists && { document: ['Document already exists'] }),
         },
       };
     }
 
-    await updateEmployeeRecord(id, validatedData);
+    await updateEmployeeRecord(id, validatedData.data);
+
+    return {
+      success: true,
+      message: 'Employee updated successfully!',
+    };
   } catch (error) {
     console.error('Error updating employee:', error);
-    if (error instanceof z.ZodError) {
-      const errors: ValidationErrors = {};
-      error.errors.forEach((err) => {
-        if (err.path) {
-          const field = err.path[0] as keyof ValidationErrors;
-          if (!errors[field]) {
-            errors[field] = [];
-          }
-          errors[field]?.push(err.message);
-        }
-      });
-      return { error: errors };
-    }
-    return { error: 'Failed to update employee' };
+    return {
+      success: false,
+      message: 'An unexpected error occurred',
+    };
+  } finally {
+    revalidatePath('/dashboard/employees');
+    redirect('/dashboard/employees');
   }
-  revalidatePath('/dashboard/employees');
-  redirect('/dashboard/employees');
 }

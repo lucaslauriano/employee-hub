@@ -37,3 +37,80 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, email, document } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Employee ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const emailExists = await prisma.employee.findFirst({
+      where: {
+        email,
+        NOT: { id },
+      },
+    });
+
+    const documentExists = await prisma.employee.findFirst({
+      where: {
+        document,
+        NOT: { id },
+      },
+    });
+
+    if (emailExists || documentExists) {
+      return NextResponse.json(
+        { error: 'Email or document already exists' },
+        { status: 409 }
+      );
+    }
+
+    const employee = await prisma.employee.update({
+      where: { id },
+      data: body,
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ employee }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Employee ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.employee.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch {
+    return NextResponse.json(
+      { error: 'Failed to delete employee' },
+      { status: 400 }
+    );
+  }
+}

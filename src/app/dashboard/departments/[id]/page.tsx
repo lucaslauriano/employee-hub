@@ -24,8 +24,8 @@ export default async function EditDepartmentPage({
   return (
     <DepartmentForm
       action={updateDepartment}
-      department={department}
       employees={employees}
+      department={department}
     />
   );
 }

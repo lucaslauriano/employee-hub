@@ -1,17 +1,21 @@
 import { prisma } from '@/lib/prisma';
-import { IEmployeeForm } from '@/types/employees';
+import type { EmployeeFormData } from './schema';
+
+export async function findEmployeeById(id: string) {
+  return prisma.employee.findUnique({
+    where: { id },
+  });
+}
 
 export async function findEmployeeByEmail(email: string) {
-  return prisma.employee.findUnique({
+  return prisma.employee.findFirst({
     where: { email },
-    select: { id: true },
   });
 }
 
 export async function findEmployeeByDocument(document: string) {
-  return prisma.employee.findUnique({
+  return prisma.employee.findFirst({
     where: { document },
-    select: { id: true },
   });
 }
 
@@ -24,7 +28,6 @@ export async function findEmployeeByEmailExcludingId(
       email,
       NOT: { id },
     },
-    select: { id: true },
   });
 }
 
@@ -37,34 +40,19 @@ export async function findEmployeeByDocumentExcludingId(
       document,
       NOT: { id },
     },
-    select: { id: true },
   });
 }
 
-export async function createEmployeeRecord(data: IEmployeeForm) {
+export async function createEmployeeRecord(data: EmployeeFormData) {
   return prisma.employee.create({
     data,
   });
 }
 
-export async function updateEmployeeRecord(id: string, data: IEmployeeForm) {
+export async function updateEmployeeRecord(id: string, data: EmployeeFormData) {
   return prisma.employee.update({
     where: { id },
     data,
-  });
-}
-
-export async function findEmployeeById(id: string) {
-  return prisma.employee.findUnique({
-    where: { id },
-    include: {
-      department: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
   });
 }
 

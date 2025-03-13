@@ -1,61 +1,73 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
 import Button from '@/components/Button';
 import Page from '@/components/Page';
 import Input from '@/components/Input';
-import { Departments } from '@prisma/client';
-import EmployeeSelect from './EmployeeSelect';
+import Select from '@/components/Select';
+import { Departments, Employee } from '@prisma/client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useActionState } from 'react';
+import {
+  departmentSchema,
+  type DepartmentFormData,
+} from '@/actions/departments/schema';
+import { type ActionResponse } from '@/actions/departments/actions';
 
-interface IDepartmentForm {
-  name: string;
-  managerId: string | null;
-}
+const initialState: ActionResponse = {
+  success: false,
+  message: '',
+};
 
 interface DepartmentFormProps {
   department?: Departments;
-  onSubmit?: (data: IDepartmentForm) => Promise<void>;
-  serverErrors?: Record<string, string[]>;
+  employees: Employee[];
+  action: (
+    prevState: ActionResponse | null,
+    formData: FormData
+  ) => Promise<ActionResponse>;
 }
 
 export default function DepartmentForm({
   department,
-  onSubmit,
-  serverErrors,
+  employees,
+  action,
 }: DepartmentFormProps) {
   const router = useRouter();
+  const [state, formAction, isPending] = useActionState(action, initialState);
   const isEditing = Boolean(department?.id);
+
   const {
     register,
-    handleSubmit,
-    setError,
     formState: { errors },
-  } = useForm<IDepartmentForm>({
-    defaultValues: department || {},
+    setError,
+  } = useForm<DepartmentFormData>({
+    resolver: zodResolver(departmentSchema),
+    defaultValues: {
+      name: department?.name || '',
+      managerId: department?.managerId || '',
+    },
   });
 
   useEffect(() => {
-    if (serverErrors) {
-      Object.entries(serverErrors).forEach(([field, messages]) => {
-        setError(field as keyof IDepartmentForm, {
+    if (state?.errors) {
+      Object.entries(state.errors).forEach(([key, messages]) => {
+        setError(key as keyof DepartmentFormData, {
           type: 'server',
           message: messages[0],
         });
       });
     }
-  }, [serverErrors, setError]);
-
-  const onSubmitHandler = async (data: IDepartmentForm) => {
-    if (onSubmit) {
-      await onSubmit(data);
-    }
-  };
+  }, [state?.errors, setError]);
 
   return (
     <Page>
-      <form onSubmit={handleSubmit(onSubmitHandler)}>
+      <form action={formAction}>
+        {isEditing && department?.id && (
+          <input type='hidden' name='id' value={department.id} />
+        )}
         <div className='border-b border-white/10 pb-12'>
           <h2 className='text-base/7 font-semibold text-gray-900'>
             {isEditing ? 'Edit' : 'Add'} Department
@@ -67,24 +79,38 @@ export default function DepartmentForm({
             <div className='sm:col-span-3'>
               <Input
                 label='Name'
+                {...register('name')}
                 error={!!errors.name}
                 supportingText={errors.name?.message}
-                {...register('name')}
               />
             </div>
             <div className='sm:col-span-3'>
-              <EmployeeSelect
+              <Select
                 label='Manager'
+                {...register('managerId')}
                 error={!!errors.managerId}
                 supportingText={errors.managerId?.message}
-                value={department?.managerId || ''}
-                onChange={(value) =>
-                  register('managerId').onChange({ target: { value } })
-                }
+                placeholder='Select a manager'
+                options={employees?.map((employee) => ({
+                  value: employee.id,
+                  label: `${employee.firstName} ${employee.lastName}`,
+                }))}
               />
             </div>
           </div>
         </div>
+
+        {state?.message && (
+          <div
+            className={`mt-4 p-4 rounded-md ${
+              state.success
+                ? 'bg-green-50 text-green-700'
+                : 'bg-red-50 text-red-700'
+            }`}
+          >
+            {state.message}
+          </div>
+        )}
 
         <div className='mt-6 flex items-center justify-end gap-x-6'>
           <Button
@@ -94,7 +120,9 @@ export default function DepartmentForm({
           >
             Cancel
           </Button>
-          <Button type='submit'>Save</Button>
+          <Button type='submit' disabled={isPending} loading={isPending}>
+            {isPending ? 'Saving...' : 'Save'}
+          </Button>
         </div>
       </form>
     </Page>

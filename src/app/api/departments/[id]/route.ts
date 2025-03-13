@@ -37,3 +37,77 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, name, managerId } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Department ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const existingDepartment = await prisma.departments.findUnique({
+      where: { id },
+    });
+
+    if (!existingDepartment) {
+      return NextResponse.json(
+        { error: 'Department not found' },
+        { status: 404 }
+      );
+    }
+
+    const department = await prisma.departments.update({
+      where: { id },
+      data: {
+        name,
+        managerId,
+      },
+      include: {
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ department }, { status: 200 });
+  } catch (error) {
+    console.error('Error updating department:', error);
+    return NextResponse.json(
+      { error: 'Failed to update department' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Department ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.departments.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch {
+    return NextResponse.json(
+      { error: 'Failed to delete department' },
+      { status: 400 }
+    );
+  }
+}
